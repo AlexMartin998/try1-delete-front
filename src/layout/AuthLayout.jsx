@@ -3,7 +3,7 @@ import useAuth from '../hooks/useAuth';
 
 const AuthLayout = () => {
   const { auth } = useAuth();
-  console.log(auth);
+  // console.log(auth);
 
   return (
     <>
@@ -14,10 +14,6 @@ const AuthLayout = () => {
       ) : (
         <Navigate to="/admin" replace />
       )}
-
-      {/* <main className="container mx-auto md:grid md:grid-cols-2 mt-12 gap-10 p-5 items-center">
-            <Outlet />
-        </main> */}
     </>
   );
 };

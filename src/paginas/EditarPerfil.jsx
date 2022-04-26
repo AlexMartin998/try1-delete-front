@@ -29,8 +29,10 @@ const EditarPerfil = () => {
         setAlerta(resultado)
     }
 
-    const { msg } = alerta
-
+    let  msg;
+    if(msg) {
+         msg  = alerta
+    }
     
     return (
         <>

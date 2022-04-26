@@ -1,109 +1,126 @@
-import {createContext, useState, useEffect} from 'react'
-import clienteAxios from '../config/axios'
+import { createContext, useState, useEffect } from 'react';
+import clienteAxios from '../config/axios';
 
-const PacientesContext = createContext()
+const PacientesContext = createContext();
 
-export const PacientesProvider = ({children}) => {
+const validateTokenFromLS = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return false;
 
-    const [pacientes, setPacientes] = useState([])
-    const [paciente, setPaciente] = useState({})
+  return {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
 
-    useEffect(() => {
-        console.log('PATIENTS PROVIDER');
-        const obtenerPacientes = async () => {
+export const PacientesProvider = ({ children }) => {
+  const [pacientes, setPacientes] = useState([]);
+  const [paciente, setPaciente] = useState({});
 
-            try {
-                const token = localStorage.getItem('token')
-                if(!token) return
+  useEffect(() => {
+    console.log('PATIENTS PROVIDER');
+    const obtenerPacientes = async () => {
+      try {
+        const config = validateTokenFromLS();
+        if (!config) return;
 
-                const config = {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    }
-                }
+        const { data } = await clienteAxios('/pacientes', config);
+        setPacientes(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    obtenerPacientes();
+  }, []);
 
-                const { data } = await clienteAxios('/pacientes', config)
-                setPacientes(data)
-                
-            } catch (error) {
-                console.log(error)
-            }
-        }
-        obtenerPacientes()
-    }, [])
+  const guardarPaciente = async paciente => {
+    const config = validateTokenFromLS();
+    if (!config) return;
 
+    if (paciente.id) {
+      try {
+        console.log('P4');
 
-    const guardarPaciente = async (paciente) => {
+        const { data } = await clienteAxios.put(
+          `/pacientes/${paciente.id}`,
+          paciente,
+          config
+        );
 
-        const token = localStorage.getItem('token')
-        const config = {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            }
-        }
+        const pacientesActualizado = pacientes.map(pacienteState =>
+          pacienteState._id === data._id ? data : pacienteState
+        );
+        setPacientes(pacientesActualizado);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      console.log('P3');
+      const config = validateTokenFromLS();
+      if (!config) return;
 
-        if(paciente.id) {
-            try {
-                const { data } = await clienteAxios.put(`/pacientes/${paciente.id}`, paciente, config)
-
-                const pacientesActualizado = pacientes.map( pacienteState => pacienteState._id === data._id ? data : pacienteState )
-                setPacientes(pacientesActualizado)
-            } catch (error) {
-                console.log(error)
-            }
-        } else {
-            try {
-                const { data } = await clienteAxios.post('/pacientes', paciente, config)
-                const { createdAt, updatedAt, __v, ...pacienteAlmacenado } = data
-                setPacientes([pacienteAlmacenado, ...pacientes])
-            } catch (error) {
-                console.log(error.response.data.msg)
-            }
-        }
+      try {
+        const { data } = await clienteAxios.post(
+          '/pacientes',
+          paciente,
+          config
+        );
+        const { createdAt, updatedAt, __v, ...pacienteAlmacenado } = data;
+        setPacientes([pacienteAlmacenado, ...pacientes]);
+      } catch (error) {
+        console.log(error.response.data.msg);
+      }
     }
+  };
 
-    const setEdicion = (paciente) => {
-        setPaciente(paciente)
+  const setEdicion = paciente => {
+    const config = validateTokenFromLS();
+    if (!config) return;
+
+    setPaciente(paciente);
+  };
+
+  const eliminarPaciente = async id => {
+    const confirmar = confirm('¿Confirmas que deseas eliminar ?');
+
+    if (confirmar) {
+      try {
+        const config = validateTokenFromLS();
+        if (!config) return;
+
+        await clienteAxios.delete(`/pacientes/${id}`, config);
+
+        const pacientesActualizado = pacientes.filter(
+          pacientesState => pacientesState._id !== id
+        );
+        setPacientes(pacientesActualizado);
+      } catch (error) {
+        console.log(error);
+      }
     }
+  };
 
-    const eliminarPaciente = async id => {
-        const confirmar = confirm('¿Confirmas que deseas eliminar ?')
-
-        if(confirmar) {
-            try {
-                const token = localStorage.getItem('token')
-                const config = {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-
-                const { data } = await clienteAxios.delete(`/pacientes/${id}`, config)
-
-                const pacientesActualizado = pacientes.filter( pacientesState => pacientesState._id !== id)
-                setPacientes(pacientesActualizado)
-            } catch (error) {
-                console.log(error)
-            }
-        }
-    }
-
-    return(
-        <PacientesContext.Provider
-            value={{
-                pacientes, 
-                guardarPaciente,
-                setEdicion, 
-                paciente, 
-                eliminarPaciente
-            }}
-        >
-            {children}
-        </PacientesContext.Provider>
-    )
-}
+  return (
+    <PacientesContext.Provider
+      value={{
+        pacientes,
+        guardarPaciente,
+        setEdicion,
+        paciente,
+        eliminarPaciente,
+      }}
+    >
+      {children}
+    </PacientesContext.Provider>
+  );
+};
 
 export default PacientesContext;
+
+/* 
+juan1@juan.com
+* a3f8902 (HEAD -> main, origin/main) Public routes added
+* 8f733a4 change password added
+*/
