@@ -1,24 +1,34 @@
-import { Outlet, Navigate } from 'react-router-dom'
+import { Outlet, Navigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import useAuth from '../hooks/useAuth';
 
-
 const RutaProtegida = () => {
-    const { auth, cargando } = useAuth()
-    if(cargando) return 'cargando...'
-
+  const { auth, cargando } = useAuth();
+  if (cargando)
     return (
+      <p className="text-3xl my-auto text-green-900 font-black">
+        Loading... PRIVATE
+      </p>
+    );
+
+  return (
+    <>
+      {auth?._id ? (
         <>
-            <Header />
-                {auth?._id ? (
-                    <main className='container mx-auto mt-10'>
-                        <Outlet /> 
-                    </main>
-                ): <Navigate to="/" /> }
-            <Footer />
+          <Header />
+
+          <main className="container mx-auto mt-10">
+            <Outlet />
+          </main>
+
+          <Footer />
         </>
-    )
+      ) : (
+        <Navigate to="/" />
+      )}
+    </>
+  );
 };
 
 export default RutaProtegida;
