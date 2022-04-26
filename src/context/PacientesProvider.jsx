@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useCallback } from 'react';
 import clienteAxios from '../config/axios';
 
 const PacientesContext = createContext();
@@ -19,21 +19,12 @@ export const PacientesProvider = ({ children }) => {
   const [pacientes, setPacientes] = useState([]);
   const [paciente, setPaciente] = useState({});
 
-  useEffect(() => {
-    console.log('PATIENTS PROVIDER');
-    const obtenerPacientes = async () => {
-      try {
-        const config = validateTokenFromLS();
-        if (!config) return;
-
-        const { data } = await clienteAxios('/pacientes', config);
-        setPacientes(data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    obtenerPacientes();
-  }, []);
+  const setPatients = useCallback(
+    apiData => {
+      setPacientes(apiData);
+    },
+    [setPacientes]
+  );
 
   const guardarPaciente = async paciente => {
     const config = validateTokenFromLS();
@@ -105,6 +96,7 @@ export const PacientesProvider = ({ children }) => {
   return (
     <PacientesContext.Provider
       value={{
+        setPatients,
         pacientes,
         guardarPaciente,
         setEdicion,

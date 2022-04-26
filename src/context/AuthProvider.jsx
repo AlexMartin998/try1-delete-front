@@ -20,8 +20,6 @@ const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({});
 
   useEffect(() => {
-    console.log('AUTH PROVIDER - PUBLIC');
-
     const autenticarUsuario = async () => {
       const config = validateTokenFromLS();
       if (!config) return setCargando(false);
