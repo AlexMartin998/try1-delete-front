@@ -5,6 +5,7 @@ const AuthLayout = () => {
   const { auth } = useAuth();
   // console.log(auth);
 
+  // Public Routes
   return (
     <>
       {!auth?._id ? (
